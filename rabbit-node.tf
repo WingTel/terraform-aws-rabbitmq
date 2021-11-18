@@ -56,8 +56,6 @@ resource "aws_launch_configuration" "rabbit-node" {
 resource "aws_autoscaling_group" "rabbit-node" {
   name = "${var.name}-${var.environment}-rabbit"
 
-  depends_on = [aws_launch_configuration.rabbit_node]
-
   launch_configuration = aws_launch_configuration.rabbit-node.name
   vpc_zone_identifier  = var.external_subnets
   min_size             = var.autoscaling_min_size
