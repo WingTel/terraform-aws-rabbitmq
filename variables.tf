@@ -141,3 +141,6 @@ variable "autoscaling_max_size" {
   description = "defined the maximum amount of the nodes you want in your autoscaling group"
 }
 
+variable "target_group_arns" {
+  description "target group to be applied to auto scaling group"
+}

@@ -56,12 +56,15 @@ resource "aws_launch_configuration" "rabbit-node" {
 resource "aws_autoscaling_group" "rabbit-node" {
   name = "${var.name}-${var.environment}-rabbit"
 
+  depends_on = [aws_launch_configuration.rabbit_node]
+
   launch_configuration = aws_launch_configuration.rabbit-node.name
   vpc_zone_identifier  = var.external_subnets
   min_size             = var.autoscaling_min_size
   max_size             = var.autoscaling_max_size
   desired_capacity     = var.desired_capacity
   termination_policies = ["OldestLaunchConfiguration", "Default"]
+  target_group_arns    = var.target_group_arns
 
   health_check_type         = "EC2"
   health_check_grace_period = 300
