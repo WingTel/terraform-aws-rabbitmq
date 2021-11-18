@@ -142,5 +142,5 @@ variable "autoscaling_max_size" {
 }
 
 variable "target_group_arns" {
-  description "target group to be applied to auto scaling group"
+  description = "target groups to be applied to auto scaling group"
 }
