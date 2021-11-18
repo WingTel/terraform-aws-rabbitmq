@@ -23,6 +23,9 @@ if [[ $EBS_NAME = "nvme" ]]; then
   [[ $IS_NOT_ROOT = "1" ]] && EBS_NAME="nvme0n1" || EBS_NAME="nvme1n1"
 fi
 
+apt-get -y update
+apt-get -y install xfsprogs
+
 # Following AWS procadure (https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ebs-using-volumes.html)
 
 mkfs -t xfs /dev/$EBS_NAME
