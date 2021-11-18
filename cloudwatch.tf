@@ -1,7 +1,7 @@
 resource "aws_cloudwatch_log_group" "service" {
   name = "/${var.environment}/${var.name}/rabbit"
 
-  retention_in_days = 4
+  retention_in_days = 5
 
   tags = {
     Environment = var.environment
