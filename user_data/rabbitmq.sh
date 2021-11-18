@@ -9,6 +9,9 @@ set -o pipefail # capture fail exit codes in piped commands
 # ----------------------------------------
 export MOUNT_POINT=/var/lib/rabbitmq
 
+apt-get -y update
+apt-get -y install xfsprogs
+
 INSTANCE_TYPE=$(wget -qO- http://169.254.169.254/latest/meta-data/instance-type | cut -d '.' -f1)
 [[ $INSTANCE_TYPE = "t2" ]] && EBS_NAME="xvdcz" || EBS_NAME="nvme"
 
@@ -22,9 +25,6 @@ if [[ $EBS_NAME = "nvme" ]]; then
   set -o pipefail
   [[ $IS_NOT_ROOT = "1" ]] && EBS_NAME="nvme0n1" || EBS_NAME="nvme1n1"
 fi
-
-apt-get -y update
-apt-get -y install xfsprogs
 
 # Following AWS procadure (https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ebs-using-volumes.html)
 
