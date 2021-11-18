@@ -1,3 +1,15 @@
+resource "aws_cloudwatch_log_group" "service" {
+  name = "/${var.environment}/${var.name}/rabbit"
+
+  retention_in_days = 4
+
+  tags = {
+    Environment = var.environment
+    Component   = "rabbit"
+    Service     = var.name
+  }
+}
+
 resource "aws_cloudwatch_metric_alarm" "node_cpu_high" {
   alarm_name          = "${var.name}-${var.environment}-node-cpureservation-high"
   comparison_operator = "GreaterThanOrEqualToThreshold"
