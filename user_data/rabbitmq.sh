@@ -114,39 +114,43 @@ echo $RABBITMQ_PLUGINS > /etc/rabbitmq/enabled_plugins
 # ----------------------------------------
 # Install Rabbitmq
 # ----------------------------------------
-## The configuration bellow was inspired by the official rabbtimq instalation guide.
-## Link: https://www.rabbitmq.com/install-debian.html#apt-bintray
-
-apt-get update -y
+## The configuration bellow was inspired by the official rabbtimq installation guide.
+## Link: https://www.rabbitmq.com/install-debian.html#apt-quick-start-cloudsmith
 
 ## Install prerequisites
-apt-get install curl gnupg -y
+apt-get install curl gnupg apt-transport-https -y
 
-## Install RabbitMQ signing key
-curl -fsSL https://github.com/rabbitmq/signing-keys/releases/download/2.0/rabbitmq-release-signing-key.asc | apt-key add -
+## Team RabbitMQ's main signing key
+curl -1sLf "https://keys.openpgp.org/vks/v1/by-fingerprint/0A9AF2115F4687BD29803A206B73A36E6026DFCA" | sudo gpg --dearmor | sudo tee /usr/share/keyrings/com.rabbitmq.team.gpg > /dev/null
+## Cloudsmith: modern Erlang repository
+curl -1sLf https://dl.cloudsmith.io/public/rabbitmq/rabbitmq-erlang/gpg.E495BB49CC4BBE5B.key | sudo gpg --dearmor | sudo tee /usr/share/keyrings/io.cloudsmith.rabbitmq.E495BB49CC4BBE5B.gpg > /dev/null
+## Cloudsmith: RabbitMQ repository
+curl -1sLf https://dl.cloudsmith.io/public/rabbitmq/rabbitmq-server/gpg.9F4587F226208342.key | sudo gpg --dearmor | sudo tee /usr/share/keyrings/io.cloudsmith.rabbitmq.9F4587F226208342.gpg > /dev/null
 
-## Add Bintray repositories that provision latest RabbitMQ and Erlang
-tee /etc/apt/sources.list.d/bintray.rabbitmq.list <<EOF
-## Installs erlang and rabbitmq respecting the versions configured versions by user
-## To see versions you can use, look the variables.tf file.
-deb https://dl.bintray.com/rabbitmq-erlang/debian $(lsb_release -sc) ${ERLANG_VERSION}
-deb https://dl.bintray.com/rabbitmq/debian $(lsb_release -sc) ${RABBITMQ_VERSION}
+## Add apt repositories maintained by Team RabbitMQ
+sudo tee /etc/apt/sources.list.d/rabbitmq.list <<EOF
+## Provides modern Erlang/OTP releases
+##
+deb [signed-by=/usr/share/keyrings/io.cloudsmith.rabbitmq.E495BB49CC4BBE5B.gpg] https://dl.cloudsmith.io/public/rabbitmq/rabbitmq-erlang/deb/ubuntu bionic main
+deb-src [signed-by=/usr/share/keyrings/io.cloudsmith.rabbitmq.E495BB49CC4BBE5B.gpg] https://dl.cloudsmith.io/public/rabbitmq/rabbitmq-erlang/deb/ubuntu bionic main
+
+## Provides RabbitMQ
+##
+deb [signed-by=/usr/share/keyrings/io.cloudsmith.rabbitmq.9F4587F226208342.gpg] https://dl.cloudsmith.io/public/rabbitmq/rabbitmq-server/deb/ubuntu bionic main
+deb-src [signed-by=/usr/share/keyrings/io.cloudsmith.rabbitmq.9F4587F226208342.gpg] https://dl.cloudsmith.io/public/rabbitmq/rabbitmq-server/deb/ubuntu bionic main
 EOF
 
-sleep $RANDOM_START
-
-export DEBIAN_FRONTEND=noninteractive
-
 ## Update package indices
-apt-get update -y
+sudo apt-get update -y
 
-apt-get install -y --fix-missing \
-    apt-transport-https \
-    ca-certificates \
-    software-properties-common \
-    erlang \
-    rabbitmq-server
+## Install Erlang packages
+sudo apt-get install -y erlang-base \
+                        erlang-asn1 erlang-crypto erlang-eldap erlang-ftp erlang-inets \
+                        erlang-mnesia erlang-os-mon erlang-parsetools erlang-public-key \
+                        erlang-runtime-tools erlang-snmp erlang-ssl \
+                        erlang-syntax-tools erlang-tftp erlang-tools erlang-xmerl
 
+## Install rabbitmq-server and its dependencies
+sudo apt-get install rabbitmq-server -y --fix-missing
 
 rabbitmqctl set_cluster_name ${CLUSTER_NAME}
-
