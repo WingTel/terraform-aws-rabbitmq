@@ -58,6 +58,7 @@ export ERLANG_VERSION=${ERLANG_VERSION}
 export DEFAULT_USER=${DEFAULT_USER}
 export DEFAULT_PASS=${DEFAULT_PASS}
 export SSM_CLOUDWATCH_CONFIG=${SSM_CLOUDWATCH_CONFIG}
+export ENVIRONMENT=${ENVIRONMENT}
 
 mkdir -p /etc/rabbitmq
 
@@ -163,12 +164,35 @@ rabbitmqctl set_cluster_name ${CLUSTER_NAME}
 # ----------------------------------------
 # Configure cloudwatch agent
 # ----------------------------------------
+
 apt-get install collectd -y
 wget https://s3.amazonaws.com/amazoncloudwatch-agent/ubuntu/amd64/latest/amazon-cloudwatch-agent.deb
 dpkg -i amazon-cloudwatch-agent.deb
 
-# Use cloudwatch config from SSM
-/opt/aws/amazon-cloudwatch-agent/bin/amazon-cloudwatch-agent-ctl \
-  -a fetch-config \
-  -m ec2 \
-  -c ssm:${SSM_CLOUDWATCH_CONFIG} -s
+cat << EndOfConfig >> /opt/aws/amazon-cloudwatch-agent/etc/amazon-cloudwatch-agent.json
+{
+  "agent": {
+    "metrics_collection_interval": 10,
+    "logfile": "/opt/aws/amazon-cloudwatch-agent/logs/amazon-cloudwatch-agent.log",
+    "run_as_user": "root"
+  },
+  "logs": {
+    "logs_collected": {
+      "files": {
+        "collect_list": [
+          {
+            "file_path": "/var/log/rabbitmq",
+            "log_group_name":  "/${ENVIRONMENT}/${CLUSTER_NAME}/rabbit",
+            "log_stream_name": "{ip_address}_{instance_id}",
+            "timestamp_format": "%d/%b/%Y:%H:%M:%S %z",
+            "timezone": "Local"
+          }
+        ]
+      }
+    }
+  }
+}
+EndOfConfig
+
+# # Use cloudwatch config from SSM
+# /opt/aws/amazon-cloudwatch-agent/bin/amazon-cloudwatch-agent-ctl
