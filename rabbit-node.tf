@@ -13,8 +13,8 @@ data "template_file" "rabbit-node" {
     RABBITMQ_VERSION  = var.rabbitmq_version
     ERLANG_VERSION    = var.erlang_version
     CLUSTER_NAME      = "${var.cluster_fqdn}-${var.name}-${var.environment}"
-    DEFAULT_USER      = var.default_rabbit_user
-    DEFAULT_PASS      = var.default_rabbit_password
+    DEFAULT_USER      = var.rabbit_default_user
+    DEFAULT_PASS      = var.rabbit_default_password
   }
 }
 
