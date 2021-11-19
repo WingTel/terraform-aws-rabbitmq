@@ -108,8 +108,8 @@ RABBITMQ_PLUGINS_FOLDER="/usr/lib/rabbitmq/plugins"
 
 mkdir -p $RABBITMQ_PLUGINS_FOLDER
 
-wget "https://github.com/noxdafox/rabbitmq-message-deduplication/releases/download/0.4.2/elixir-1.8.2.ez" -O "$RABBITMQ_PLUGINS_FOLDER/elixir-1.8.2.ez"
-wget "https://github.com/noxdafox/rabbitmq-message-deduplication/releases/download/0.4.2/rabbitmq_message_deduplication-0.4.2.ez" -O "$RABBITMQ_PLUGINS_FOLDER/rabbitmq_message_deduplication-0.4.2.ez"
+wget "https://github.com/noxdafox/rabbitmq-message-deduplication/releases/download/0.5.1/elixir-1.12.2.ez" -O "$RABBITMQ_PLUGINS_FOLDER/elixir-1.12.2.ez"
+wget "https://github.com/noxdafox/rabbitmq-message-deduplication/releases/download/0.5.1/rabbitmq_message_deduplication-0.5.1.ez" -O "$RABBITMQ_PLUGINS_FOLDER/rabbitmq_message_deduplication-0.5.1.ez"
 wget "https://github.com/Ayanda-D/rabbitmq-queue-master-balancer/releases/download/v0.0.5/rabbitmq_queue_master_balancer-0.0.5.ez" -O "$RABBITMQ_PLUGINS_FOLDER/rabbitmq_queue_master_balancer-0.0.5.ez"
 
 RABBITMQ_PLUGINS="[rabbitmq_shovel,rabbitmq_shovel_management,rabbitmq_management,rabbitmq_peer_discovery_aws,rabbitmq_queue_master_balancer,rabbitmq_tracing,rabbitmq_message_deduplication]."
