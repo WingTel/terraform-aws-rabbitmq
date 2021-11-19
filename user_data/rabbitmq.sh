@@ -163,6 +163,7 @@ rabbitmqctl set_cluster_name ${CLUSTER_NAME}
 # ----------------------------------------
 # Configure cloudwatch agent
 # ----------------------------------------
+apt-get install collectd -y
 wget https://s3.amazonaws.com/amazoncloudwatch-agent/ubuntu/amd64/latest/amazon-cloudwatch-agent.deb
 dpkg -i amazon-cloudwatch-agent.deb
 
