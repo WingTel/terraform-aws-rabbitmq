@@ -6,7 +6,8 @@
                 "logs:CreateLogGroup",
                 "logs:CreateLogStream",
                 "logs:PutLogEvents",
-                "logs:DescribeLogStreams"
+                "logs:DescribeLogStreams",
+                "cloudwatch:PutMetricData"
             ],
             "Resource": [
                 "arn:aws:logs:*:*:*"
