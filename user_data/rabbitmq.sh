@@ -182,7 +182,7 @@ cat << EndOfConfig >> /opt/aws/amazon-cloudwatch-agent/etc/agent-config.json
       "files": {
         "collect_list": [
           {
-            "file_path": "/var/log/rabbitmq",
+            "file_path": "/var/log/rabbitmq/**.log",
             "log_group_name":  "/${ENVIRONMENT}/${SERVICE_NAME}/rabbit",
             "log_stream_name": "{ip_address}_{instance_id}",
             "timestamp_format": "%d/%b/%Y:%H:%M:%S %z",
@@ -195,4 +195,4 @@ cat << EndOfConfig >> /opt/aws/amazon-cloudwatch-agent/etc/agent-config.json
 }
 EndOfConfig
 
-/opt/aws/amazon-cloudwatch-agent/bin/amazon-cloudwatch-agent-ctl -a fetch-config -m ec2 -c file:/opt/aws/amazon-cloudwatch-agent/etc/agent-config.json -s
+/opt/aws/amazon-cloudwatch-agent/bin/amazon-cloudwatch-agent-ctl -a fetch-config -m ec2 -c file:/opt/aws/amazon-cloudwatch-agent/etc/amazon -s
