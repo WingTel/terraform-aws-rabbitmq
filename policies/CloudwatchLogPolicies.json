@@ -8,6 +8,19 @@
             "Resource": [
                 "*"
             ]
+        },
+        {
+            "Effect": "Allow",
+            "Action": [
+                "logs:CreateLogGroup",
+                "logs:CreateLogStream",
+                "logs:PutLogEvents",
+                "logs:DescribeLogStreams",
+                "cloudwatch:PutMetricData"
+            ],
+            "Resource": [
+                "arn:aws:logs:*:*:*"
+            ]
         }
     ],
     "Version": "2012-10-17"

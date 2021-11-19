@@ -31,7 +31,7 @@ locals {
 
 resource "aws_iam_instance_profile" "CloudwatchLogInstanceProfile" {
   name = "${var.name}-rabbit-${var.environment}-cw-log-profile"
-  role = aws_iam_role.CloudwatchRole.name
+  role = aws_iam_role.CloudwatchLogRole.name
 }
 
 resource "aws_iam_role_policy_attachment" "this" {
