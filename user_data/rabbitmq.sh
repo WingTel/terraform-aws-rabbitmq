@@ -169,7 +169,7 @@ apt-get install collectd -y
 wget https://s3.amazonaws.com/amazoncloudwatch-agent/ubuntu/amd64/latest/amazon-cloudwatch-agent.deb
 dpkg -i amazon-cloudwatch-agent.deb
 
-cat << EndOfConfig >> /opt/aws/amazon-cloudwatch-agent/etc/amazon-cloudwatch-agent.json
+cat << EndOfConfig >> /opt/aws/amazon-cloudwatch-agent/etc/agent-config.json
 {
   "agent": {
     "metrics_collection_interval": 10,
@@ -195,5 +195,4 @@ cat << EndOfConfig >> /opt/aws/amazon-cloudwatch-agent/etc/amazon-cloudwatch-age
 }
 EndOfConfig
 
-# # Use cloudwatch config from SSM
-# /opt/aws/amazon-cloudwatch-agent/bin/amazon-cloudwatch-agent-ctl
+/opt/aws/amazon-cloudwatch-agent/bin/amazon-cloudwatch-agent-ctl -a fetch-config -m ec2 -c file:/opt/aws/amazon-cloudwatch-agent/etc/agent-config.json -s
