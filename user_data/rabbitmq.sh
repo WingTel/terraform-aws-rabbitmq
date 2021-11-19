@@ -57,6 +57,7 @@ export RABBITMQ_VERSION=${RABBITMQ_VERSION}
 export ERLANG_VERSION=${ERLANG_VERSION}
 export DEFAULT_USER=${DEFAULT_USER}
 export DEFAULT_PASS=${DEFAULT_PASS}
+export SSM_CLOUDWATCH_CONFIG=${SSM_CW_CONFIG}
 
 mkdir -p /etc/rabbitmq
 
@@ -158,3 +159,15 @@ sudo apt-get install -y erlang-base \
 sudo apt-get install rabbitmq-server -y --fix-missing
 
 rabbitmqctl set_cluster_name ${CLUSTER_NAME}
+
+# ----------------------------------------
+# Configure cloudwatch agent
+# ----------------------------------------
+wget https://s3.amazonaws.com/amazoncloudwatch-agent/ubuntu/amd64/latest/amazon-cloudwatch-agent.deb
+dpkg -i amazon-cloudwatch-agent.deb
+
+# Use cloudwatch config from SSM
+/opt/aws/amazon-cloudwatch-agent/bin/amazon-cloudwatch-agent-ctl \
+  -a fetch-config \
+  -m ec2 \
+  -c ssm:${SSM_CLOUDWATCH_CONFIG} -s
