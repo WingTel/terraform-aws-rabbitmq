@@ -55,6 +55,8 @@ export AWS_ACCESS_KEY="${AWS_ACCESS_KEY}"
 export CLUSTER_NAME=${CLUSTER_NAME}
 export RABBITMQ_VERSION=${RABBITMQ_VERSION}
 export ERLANG_VERSION=${ERLANG_VERSION}
+export DEFAULT_USER=${DEFAULT_USER}
+export DEFAULT_PASS=${DEFAULT_PASS}
 
 mkdir -p /etc/rabbitmq
 
@@ -67,6 +69,8 @@ cat << EndOfConfig >> /etc/rabbitmq/rabbitmq.conf
 ## ==============
 ##
 
+default_user = ${DEFAULT_USER}
+default_pass = ${DEFAULT_PASS}
 loopback_users.guest                           = false
 
 ## Networking

@@ -33,6 +33,14 @@ variable "aws_secret_key" {
   description = "Used by rabbitmq to describe autoscaling group"
 }
 
+variable "rabbit_default_user" {
+  description = "Default username to set for rabbit"
+}
+
+variable "rabbit_default_password" {
+  description = "Default password to set for rabbit"
+}
+
 variable "cluster_fqdn" {}
 
 # ------------------------------------------------------
