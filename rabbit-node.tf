@@ -15,7 +15,6 @@ data "template_file" "rabbit-node" {
     CLUSTER_NAME          = "${var.cluster_fqdn}-${var.name}-${var.environment}"
     DEFAULT_USER          = var.rabbit_default_user
     DEFAULT_PASS          = var.rabbit_default_password
-    SSM_CLOUDWATCH_CONFIG = aws_ssm_parameter.cw_agent.name
     ENVIRONMENT           = var.environment
   }
 }
