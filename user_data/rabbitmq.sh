@@ -58,6 +58,7 @@ export ERLANG_VERSION=${ERLANG_VERSION}
 export DEFAULT_USER=${DEFAULT_USER}
 export DEFAULT_PASS=${DEFAULT_PASS}
 export ENVIRONMENT=${ENVIRONMENT}
+export SERVICE_NAME=${SERVICE_NAME}
 
 mkdir -p /etc/rabbitmq
 
@@ -181,7 +182,7 @@ cat << EndOfConfig >> /opt/aws/amazon-cloudwatch-agent/etc/amazon-cloudwatch-age
         "collect_list": [
           {
             "file_path": "/var/log/rabbitmq",
-            "log_group_name":  "/${ENVIRONMENT}/${CLUSTER_NAME}/rabbit",
+            "log_group_name":  "/${ENVIRONMENT}/${SERVICE_NAME}/rabbit",
             "log_stream_name": "{ip_address}_{instance_id}",
             "timestamp_format": "%d/%b/%Y:%H:%M:%S %z",
             "timezone": "Local"
