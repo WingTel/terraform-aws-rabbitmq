@@ -11,7 +11,7 @@ resource "aws_cloudwatch_log_group" "service" {
 }
 
 resource "aws_cloudwatch_metric_alarm" "node_cpu_high" {
-  alarm_name          = "${var.name}-${var.environment}-node-cpureservation-high"
+  alarm_name          = "${var.name}-${var.environment}-rabbit-cpureservation-high"
   comparison_operator = "GreaterThanOrEqualToThreshold"
   evaluation_periods  = "2"
   metric_name         = "CPUUtilization"
@@ -33,7 +33,7 @@ resource "aws_cloudwatch_metric_alarm" "node_cpu_high" {
 }
 
 resource "aws_cloudwatch_metric_alarm" "node_memory_high" {
-  alarm_name          = "${var.name}-${var.environment}-node-memoryreservation-high"
+  alarm_name          = "${var.name}-${var.environment}-rabbit-memoryreservation-high"
   comparison_operator = "GreaterThanOrEqualToThreshold"
   evaluation_periods  = "2"
   metric_name         = "MemoryReservation"
@@ -59,7 +59,7 @@ resource "aws_cloudwatch_metric_alarm" "node_memory_high" {
 }
 
 resource "aws_cloudwatch_metric_alarm" "node_cpu_low" {
-  alarm_name          = "${var.name}-${var.environment}-node-cpureservation-low"
+  alarm_name          = "${var.name}-${var.environment}-rabbit-cpureservation-low"
   comparison_operator = "LessThanOrEqualToThreshold"
   evaluation_periods  = "2"
   metric_name         = "CPUUtilization"
@@ -85,7 +85,7 @@ resource "aws_cloudwatch_metric_alarm" "node_cpu_low" {
 }
 
 resource "aws_cloudwatch_metric_alarm" "node_memory_low" {
-  alarm_name          = "${var.name}-${var.environment}-node-memoryreservation-low"
+  alarm_name          = "${var.name}-${var.environment}-rabbit-memoryreservation-low"
   comparison_operator = "LessThanOrEqualToThreshold"
   evaluation_periods  = "2"
   metric_name         = "MemoryReservation"
