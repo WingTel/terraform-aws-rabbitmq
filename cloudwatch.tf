@@ -81,7 +81,7 @@ resource "aws_cloudwatch_metric_alarm" "node_cpu_low" {
 
   # This is required to make cloudwatch alarms creation sequential, AWS doesn't
   # support modifying alarms concurrently.
-  depends_on = ["aws_cloudwatch_metric_alarm.node_memory_high"]
+  depends_on = [aws_cloudwatch_metric_alarm.node_memory_high]
 }
 
 resource "aws_cloudwatch_metric_alarm" "node_memory_low" {
@@ -107,5 +107,5 @@ resource "aws_cloudwatch_metric_alarm" "node_memory_low" {
 
   # This is required to make cloudwatch alarms creation sequential, AWS doesn't
   # support modifying alarms concurrently.
-  depends_on = ["aws_cloudwatch_metric_alarm.node_cpu_low"]
+  depends_on = [aws_cloudwatch_metric_alarm.node_cpu_low]
 }
