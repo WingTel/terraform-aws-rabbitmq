@@ -87,7 +87,7 @@ variable "vpc_id" {
 
 variable "external_subnets" {
   description = "External subnets of the VPC"
-  type        = "list"
+  type        = list(string)
 }
 
 variable "associate_public_ip_address" {
@@ -104,17 +104,17 @@ variable "associate_public_ip_address" {
 # Network Security
 variable "ingress_public_cidr_blocks" {
   description = "A list of default CIDR blocks to allow traffic from (public usage)"
-  type        = "list"
+  type        = list(string)
 }
 
 variable "ingress_private_cidr_blocks" {
   description = "A list of CIDR block to allow traffic from (private usage)"
-  type        = "list"
+  type        = list(string)
 }
 
 variable "internet_public_cidr_blocks" {
   description = "Public outbount to access internet"
-  type        = "list"
+  type        = list(string)
 }
 
 # ------------------------------------------------------

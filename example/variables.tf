@@ -62,20 +62,20 @@ variable "cluster_fqdn" {
 }
 
 variable "ingress_private_cidr_blocks" {
-  type = "list"
+  type = list(string)
 }
 
 variable "ingress_public_cidr_blocks" {
-  type = "list"
+  type = list(string)
 }
 
 variable "internet_public_cidr_blocks" {
-  type = "list"
+  type = list(string)
 }
 
 variable "external_subnets" {
   description = "A list of one or more availability zones for the ASG"
-  type        = "list"
+  type        = list(string)
 }
 
 variable "vpc_id" {}
@@ -84,7 +84,7 @@ variable "region" {}
 variable "certificate_arn" {}
 
 variable "subnet_ids" {
-  type = "list"
+  type = list(string)
 }
 
 variable "domain_name" {}

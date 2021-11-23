@@ -5,7 +5,7 @@ variable "name" {
 }
 
 variable "subnet_ids" {
-  type        = "list"
+  type        = list(string)
   description = "Comma separated list of subnet IDs"
 }
 
