@@ -21,7 +21,7 @@ data "template_file" "rabbit-node" {
 }
 
 resource "aws_launch_configuration" "rabbit-node" {
-  name_prefix = "${var.name}-${var.environment}-rabbit-"
+  name_prefix = "${var.name}-rabbit-${var.environment}-"
 
   image_id      = var.image_id
   instance_type = var.instance_type
@@ -58,7 +58,7 @@ resource "aws_launch_configuration" "rabbit-node" {
 }
 
 resource "aws_autoscaling_group" "rabbit-node" {
-  name = "${var.name}-${var.environment}-rabbit"
+  name = "${var.name}-rabbit-${var.environment}"
 
   launch_configuration = aws_launch_configuration.rabbit-node.name
   vpc_zone_identifier  = var.external_subnets
@@ -73,7 +73,7 @@ resource "aws_autoscaling_group" "rabbit-node" {
 
   tag {
     key                 = "Name"
-    value               = "${var.name}-${var.environment}-rabbit"
+    value               = "${var.name}-rabbit-${var.environment}"
     propagate_at_launch = true
   }
 
@@ -95,7 +95,7 @@ resource "aws_autoscaling_group" "rabbit-node" {
 }
 
 resource "aws_autoscaling_policy" "rabbit-node-scale-up" {
-  name                   = "${var.name}-${var.environment}-rabbit-node-up"
+  name                   = "${var.name}-rabbit-${var.environment}-node-up"
   scaling_adjustment     = 1
   adjustment_type        = "ChangeInCapacity"
   cooldown               = 300
@@ -107,7 +107,7 @@ resource "aws_autoscaling_policy" "rabbit-node-scale-up" {
 }
 
 resource "aws_autoscaling_policy" "rabbit-node-scale-down" {
-  name                   = "${var.name}-${var.environment}-rabbit-node-down"
+  name                   = "${var.name}-rabbit-${var.environment}-node-down"
   scaling_adjustment     = -1
   adjustment_type        = "ChangeInCapacity"
   cooldown               = 300
@@ -119,7 +119,7 @@ resource "aws_autoscaling_policy" "rabbit-node-scale-down" {
 }
 
 resource "aws_autoscaling_lifecycle_hook" "rabbit-node-upgrade" {
-  name                   = "${var.name}-${var.environment}-rabbit-node-upgrade-hook"
+  name                   = "${var.name}-rabbit-${var.environment}-node-upgrade-hook"
   autoscaling_group_name = aws_autoscaling_group.rabbit-node.name
   default_result         = "CONTINUE"
   heartbeat_timeout      = 2000
