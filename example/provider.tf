@@ -68,6 +68,4 @@ module "rabbit" {
 
   cpu_high_limit    = "70"
   cpu_low_limit     = "20"
-  memory_high_limit = "70"
-  memory_low_limit  = "20"
 }

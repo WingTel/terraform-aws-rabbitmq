@@ -129,14 +129,6 @@ variable "cpu_low_limit" {
   description = "Value of CPU Usage triggering a scale down"
 }
 
-variable "memory_high_limit" {
-  description = "Value of memory Usage triggering a scale up"
-}
-
-variable "memory_low_limit" {
-  description = "Value of memory Usage triggering a scale down"
-}
-
 variable "desired_capacity" {
   description = "defined how many node you want in your autoscaling group"
 }
