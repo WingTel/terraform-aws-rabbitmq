@@ -150,8 +150,10 @@ curl -1sLf https://dl.cloudsmith.io/public/rabbitmq/rabbitmq-server/gpg.9F4587F2
 tee /etc/apt/sources.list.d/bintray.rabbitmq.list <<EOF
 ## Installs erlang and rabbitmq respecting the versions configured versions by user
 ## To see versions you can use, look the variables.tf file.
-deb https://dl.bintray.com/rabbitmq-erlang/debian $(lsb_release -sc) ${ERLANG_VERSION}
-deb https://dl.bintray.com/rabbitmq/debian $(lsb_release -sc) ${RABBITMQ_VERSION}
+deb https://dl.cloudsmith.io/public/rabbitmq/rabbitmq-erlang/deb/ubuntu $(lsb_release -sc) ${ERLANG_VERSION}
+deb-src https://dl.cloudsmith.io/public/rabbitmq/rabbitmq-erlang/deb/ubuntu $(lsb_release -sc) ${ERLANG_VERSION}
+deb https://dl.cloudsmith.io/public/rabbitmq/rabbitmq-server/deb/ubuntu $(lsb_release -sc) ${RABBITMQ_VERSION}
+deb-src https://dl.cloudsmith.io/public/rabbitmq/rabbitmq-server/deb/ubuntu $(lsb_release -sc) ${RABBITMQ_VERSION}
 EOF
 
 ## Update package indices
