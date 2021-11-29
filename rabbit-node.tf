@@ -122,6 +122,6 @@ resource "aws_autoscaling_lifecycle_hook" "rabbit-node-upgrade" {
   name                   = "${var.name}-rabbit-${var.environment}-node-upgrade-hook"
   autoscaling_group_name = aws_autoscaling_group.rabbit-node.name
   default_result         = "CONTINUE"
-  heartbeat_timeout      = 2000
+  heartbeat_timeout      = 1200
   lifecycle_transition   = "autoscaling:EC2_INSTANCE_TERMINATING"
 }
