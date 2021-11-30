@@ -7,3 +7,7 @@ output "security_group_id" {
 output "autoscaling_group" {
   value = aws_autoscaling_group.rabbit-node.id
 }
+
+output "autoscaling_group_name" {
+  value = aws_autoscaling_group.rabbit-node.name
+}
