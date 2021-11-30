@@ -133,7 +133,7 @@ curl -1sLf https://dl.cloudsmith.io/public/rabbitmq/rabbitmq-erlang/gpg.E495BB49
 ## Cloudsmith: RabbitMQ repository
 curl -1sLf https://dl.cloudsmith.io/public/rabbitmq/rabbitmq-server/gpg.9F4587F226208342.key | sudo gpg --dearmor | sudo tee /usr/share/keyrings/io.cloudsmith.rabbitmq.9F4587F226208342.gpg > /dev/null
 
-# Add apt repositories maintained by Team RabbitMQ
+## Add apt repositories maintained by Team RabbitMQ
 sudo tee /etc/apt/sources.list.d/rabbitmq.list <<EOF
 ## Provides modern Erlang/OTP releases
 ##
@@ -144,18 +144,6 @@ deb-src [signed-by=/usr/share/keyrings/io.cloudsmith.rabbitmq.E495BB49CC4BBE5B.g
 ##
 deb [signed-by=/usr/share/keyrings/io.cloudsmith.rabbitmq.9F4587F226208342.gpg] https://dl.cloudsmith.io/public/rabbitmq/rabbitmq-server/deb/ubuntu bionic main
 deb-src [signed-by=/usr/share/keyrings/io.cloudsmith.rabbitmq.9F4587F226208342.gpg] https://dl.cloudsmith.io/public/rabbitmq/rabbitmq-server/deb/ubuntu bionic main
-EOF
-
-sudo tee /etc/apt/preferences.d/erlang <<EOF
-Package: erlang*
-Pin: version 1:23.2.4-1
-Pin-Priority: 1000
-EOF
-
-sudo tee /etc/apt/preferences.d/rabbitmq <<EOF
-Package: rabbitmq-server
-Pin: version 3.8.20-1
-Pin-Priority: 1000
 EOF
 
 ## Update package indices
