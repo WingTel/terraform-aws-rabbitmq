@@ -148,7 +148,7 @@ EOF
 
 sudo tee /etc/apt/preferences.d/erlang <<EOF
 Package: erlang*
-Pin: version 1:23.0.4-1
+Pin: version 1:23.2.4-1
 Pin-Priority: 1000
 EOF
 
