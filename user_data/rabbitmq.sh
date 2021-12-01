@@ -88,8 +88,9 @@ listeners.tcp.default                          = 5672
 management.listener.port                       = 15672
 management.listener.ssl                        = false
 
-
 hipe_compile                                   = false
+
+consumer_timeout                               = 86400000  # 24 hours
 
 ##
 ## Clustering
