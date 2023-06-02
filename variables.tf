@@ -59,8 +59,20 @@ variable "instance_ebs_optimized" {
   description = "When set to true the instance will be launched with EBS optimized turned on"
 }
 
+variable "root_volume_type" {
+  description = "The type of root volume. Can be standard, gp2, gp3, st1, sc1 or io1."
+  type        = string
+  default     = "gp2"
+}
+
 variable "root_volume_size" {
   description = "Root volume size in GB"
+}
+
+variable "rabbit_volume_type" {
+  description = "The type of rabbit volume. Can be standard, gp2, gp3, st1, sc1 or io1."
+  type        = string
+  default     = "gp2"
 }
 
 variable "rabbit_volume_size" {
