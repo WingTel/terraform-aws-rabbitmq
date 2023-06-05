@@ -5,18 +5,18 @@ data "template_file" "rabbit-node" {
   template = file("${path.module}/user_data/rabbitmq.sh")
 
   vars = {
-    AWS_REGION            = var.region
-    VPC_ID                = var.vpc_id
-    ERL_SECRET_COOKIE     = var.erl_secret_cookie
-    AWS_ACCESS_KEY        = var.aws_access_key
-    AWS_SECRET_KEY        = var.aws_secret_key
-    RABBITMQ_VERSION      = var.rabbitmq_version
-    ERLANG_VERSION        = var.erlang_version
-    CLUSTER_NAME          = "${var.cluster_fqdn}-${var.name}-${var.environment}"
-    DEFAULT_USER          = var.rabbit_default_user
-    DEFAULT_PASS          = var.rabbit_default_password
-    ENVIRONMENT           = var.environment
-    SERVICE_NAME          = var.name
+    AWS_REGION        = var.region
+    VPC_ID            = var.vpc_id
+    ERL_SECRET_COOKIE = var.erl_secret_cookie
+    AWS_ACCESS_KEY    = var.aws_access_key
+    AWS_SECRET_KEY    = var.aws_secret_key
+    RABBITMQ_VERSION  = var.rabbitmq_version
+    ERLANG_VERSION    = var.erlang_version
+    CLUSTER_NAME      = "${var.cluster_fqdn}-${var.name}-${var.environment}"
+    DEFAULT_USER      = var.rabbit_default_user
+    DEFAULT_PASS      = var.rabbit_default_password
+    ENVIRONMENT       = var.environment
+    SERVICE_NAME      = var.name
   }
 }
 
@@ -41,14 +41,14 @@ resource "aws_launch_configuration" "rabbit-node" {
 
   # root
   root_block_device {
-    volume_type = "gp2"
+    volume_type = var.root_volume_type
     volume_size = var.root_volume_size
   }
 
   # rabbit
   ebs_block_device {
     device_name = "/dev/xvdcz"
-    volume_type = "gp2"
+    volume_type = var.rabbit_volume_type
     volume_size = var.rabbit_volume_size
   }
 

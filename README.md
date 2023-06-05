@@ -98,3 +98,59 @@ module "rabbit" {
 
 *Starship Troopers narrator voice*:
 Would you like to know more ? CitizenPlane is hiring take a look [here](https://www.notion.so/citizenplane/Current-offers-a29fe322e68c4fb4aa5cb6d628d49108)
+
+
+<!-- BEGINNING OF PRE-COMMIT-TERRAFORM DOCS HOOK -->
+## Providers
+
+| Name | Version |
+|------|---------|
+| aws | n/a |
+| template | n/a |
+
+## Inputs
+
+| Name | Description | Type | Default | Required |
+|------|-------------|------|---------|:-----:|
+| associate\_public\_ip\_address | Should created instances be publicly accessible (if the SG allows) | `any` | n/a | yes |
+| autoscaling\_max\_size | defined the maximum amount of the nodes you want in your autoscaling group | `any` | n/a | yes |
+| autoscaling\_min\_size | defined the minimum amount of the nodes you want in your autoscaling group | `any` | n/a | yes |
+| aws\_access\_key | Used by rabbitmq to describe autoscaling group | `any` | n/a | yes |
+| aws\_secret\_key | Used by rabbitmq to describe autoscaling group | `any` | n/a | yes |
+| az\_count | Number of AZs to cover in a given AWS region | `any` | n/a | yes |
+| cluster\_fqdn | n/a | `any` | n/a | yes |
+| cpu\_high\_limit | Value of CPU Usage triggering a scale up | `any` | n/a | yes |
+| cpu\_low\_limit | Value of CPU Usage triggering a scale down | `any` | n/a | yes |
+| desired\_capacity | defined how many node you want in your autoscaling group | `any` | n/a | yes |
+| environment | Desired environment to use in custom ids and names EG: "staging" | `any` | n/a | yes |
+| erl\_secret\_cookie | Used by rabbitmq to join a cluster | `any` | n/a | yes |
+| external\_subnets | External subnets of the VPC | `list(string)` | n/a | yes |
+| image\_id | Ubuntu or Debian based image compatible with the start script (Use aws optimized ubuntu) | `any` | n/a | yes |
+| ingress\_private\_cidr\_blocks | A list of CIDR block to allow traffic from (private usage) | `list(string)` | n/a | yes |
+| ingress\_public\_cidr\_blocks | A list of default CIDR blocks to allow traffic from (public usage) | `list(string)` | n/a | yes |
+| instance\_ebs\_optimized | When set to true the instance will be launched with EBS optimized turned on | `any` | n/a | yes |
+| instance\_type | Rabbit node type instance | `any` | n/a | yes |
+| internet\_public\_cidr\_blocks | Public outbount to access internet | `list(string)` | n/a | yes |
+| name | The cluster name, e.g cdn | `any` | n/a | yes |
+| rabbit\_default\_password | Default password to set for rabbit | `any` | n/a | yes |
+| rabbit\_default\_user | Default username to set for rabbit | `any` | n/a | yes |
+| rabbit\_volume\_size | Attached EBS volume size in GB - this is where docker data will be stored | `any` | n/a | yes |
+| region | The AWS region to create resources in. | `any` | n/a | yes |
+| root\_volume\_size | Root volume size in GB | `any` | n/a | yes |
+| ssh\_key\_name | The aws ssh key name. | `any` | n/a | yes |
+| target\_group\_arns | target groups to be applied to auto scaling group | `any` | n/a | yes |
+| vpc\_id | ID of the VPC to use | `any` | n/a | yes |
+| erlang\_version | The version of the rabbitmq that you want install. To see all versions click this link: https://dl.bintray.com/rabbitmq-erlang/debian/dists/ | `string` | `"erlang"` | no |
+| rabbit\_volume\_type | The type of rabbit volume. Can be standard, gp2, gp3, st1, sc1 or io1. | `string` | `"gp2"` | no |
+| rabbitmq\_version | The version of the rabbitmq that you want install. To see all versions click this link: https://dl.bintray.com/rabbitmq/debian/dists/ | `string` | `"main"` | no |
+| root\_volume\_type | The type of root volume. Can be standard, gp2, gp3, st1, sc1 or io1. | `string` | `"gp2"` | no |
+
+## Outputs
+
+| Name | Description |
+|------|-------------|
+| autoscaling\_group | Used by attachment target group |
+| autoscaling\_group\_name | n/a |
+| security\_group\_id | Security used by the nodes and share to the load balencer |
+
+<!-- END OF PRE-COMMIT-TERRAFORM DOCS HOOK -->

@@ -35,18 +35,18 @@ resource "aws_iam_instance_profile" "CloudwatchLogInstanceProfile" {
 }
 
 resource "aws_iam_role_policy_attachment" "this" {
-  count = length(local.role_policy_arns)
+  count      = length(local.role_policy_arns)
   role       = aws_iam_role.CloudwatchLogRole.name
   policy_arn = element(local.role_policy_arns, count.index)
 }
 
 resource "aws_iam_role_policy" "CloudwatchLogPolicies" {
-  name = "${var.name}-rabbit-${var.environment}-cw-log-policies"
-  role = aws_iam_role.CloudwatchLogRole.id
+  name   = "${var.name}-rabbit-${var.environment}-cw-log-policies"
+  role   = aws_iam_role.CloudwatchLogRole.id
   policy = file("${path.module}/policies/CloudwatchLogPolicies.json")
 }
 
 resource "aws_iam_role" "CloudwatchLogRole" {
-  name = "${var.name}-rabbit-${var.environment}-cw-log-profile"
+  name               = "${var.name}-rabbit-${var.environment}-cw-log-profile"
   assume_role_policy = file("${path.module}/policies/CloudwatchRole.json")
 }
