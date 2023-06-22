@@ -101,56 +101,113 @@ Would you like to know more ? CitizenPlane is hiring take a look [here](https://
 
 
 <!-- BEGINNING OF PRE-COMMIT-TERRAFORM DOCS HOOK -->
+## Requirements
+
+No requirements.
+
 ## Providers
 
 | Name | Version |
 |------|---------|
-| aws | n/a |
-| template | n/a |
+| <a name="provider_aws"></a> [aws](#provider\_aws) | n/a |
+| <a name="provider_template"></a> [template](#provider\_template) | n/a |
+
+## Modules
+
+No modules.
+
+## Resources
+
+| Name | Type |
+|------|------|
+| [aws_autoscaling_group.rabbit-node](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/autoscaling_group) | resource |
+| [aws_autoscaling_lifecycle_hook.rabbit-node-upgrade](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/autoscaling_lifecycle_hook) | resource |
+| [aws_autoscaling_policy.rabbit-node-scale-down](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/autoscaling_policy) | resource |
+| [aws_autoscaling_policy.rabbit-node-scale-up](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/autoscaling_policy) | resource |
+| [aws_cloudwatch_log_group.service](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/cloudwatch_log_group) | resource |
+| [aws_cloudwatch_metric_alarm.node_cpu_high](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/cloudwatch_metric_alarm) | resource |
+| [aws_cloudwatch_metric_alarm.node_cpu_low](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/cloudwatch_metric_alarm) | resource |
+| [aws_iam_instance_profile.CloudwatchLogInstanceProfile](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_instance_profile) | resource |
+| [aws_iam_instance_profile.ProxyInstanceProfile](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_instance_profile) | resource |
+| [aws_iam_role.CloudwatchLogRole](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_role) | resource |
+| [aws_iam_role.ProxyRole](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_role) | resource |
+| [aws_iam_role_policy.CloudwatchLogPolicies](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_role_policy) | resource |
+| [aws_iam_role_policy.CloudwatchPolicies](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_role_policy) | resource |
+| [aws_iam_role_policy.ProxyPolicies](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_role_policy) | resource |
+| [aws_iam_role_policy_attachment.this](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_role_policy_attachment) | resource |
+| [aws_launch_template.rabbit-node](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/launch_template) | resource |
+| [aws_security_group.rabbit-cluster](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/security_group) | resource |
+| [aws_security_group.rabbit-node](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/security_group) | resource |
+| [template_file.rabbit-node](https://registry.terraform.io/providers/hashicorp/template/latest/docs/data-sources/file) | data source |
 
 ## Inputs
 
 | Name | Description | Type | Default | Required |
-|------|-------------|------|---------|:-----:|
-| associate\_public\_ip\_address | Should created instances be publicly accessible (if the SG allows) | `any` | n/a | yes |
-| autoscaling\_max\_size | defined the maximum amount of the nodes you want in your autoscaling group | `any` | n/a | yes |
-| autoscaling\_min\_size | defined the minimum amount of the nodes you want in your autoscaling group | `any` | n/a | yes |
-| aws\_access\_key | Used by rabbitmq to describe autoscaling group | `any` | n/a | yes |
-| aws\_secret\_key | Used by rabbitmq to describe autoscaling group | `any` | n/a | yes |
-| az\_count | Number of AZs to cover in a given AWS region | `any` | n/a | yes |
-| cluster\_fqdn | n/a | `any` | n/a | yes |
-| cpu\_high\_limit | Value of CPU Usage triggering a scale up | `any` | n/a | yes |
-| cpu\_low\_limit | Value of CPU Usage triggering a scale down | `any` | n/a | yes |
-| desired\_capacity | defined how many node you want in your autoscaling group | `any` | n/a | yes |
-| environment | Desired environment to use in custom ids and names EG: "staging" | `any` | n/a | yes |
-| erl\_secret\_cookie | Used by rabbitmq to join a cluster | `any` | n/a | yes |
-| external\_subnets | External subnets of the VPC | `list(string)` | n/a | yes |
-| image\_id | Ubuntu or Debian based image compatible with the start script (Use aws optimized ubuntu) | `any` | n/a | yes |
-| ingress\_private\_cidr\_blocks | A list of CIDR block to allow traffic from (private usage) | `list(string)` | n/a | yes |
-| ingress\_public\_cidr\_blocks | A list of default CIDR blocks to allow traffic from (public usage) | `list(string)` | n/a | yes |
-| instance\_ebs\_optimized | When set to true the instance will be launched with EBS optimized turned on | `any` | n/a | yes |
-| instance\_type | Rabbit node type instance | `any` | n/a | yes |
-| internet\_public\_cidr\_blocks | Public outbount to access internet | `list(string)` | n/a | yes |
-| name | The cluster name, e.g cdn | `any` | n/a | yes |
-| rabbit\_default\_password | Default password to set for rabbit | `any` | n/a | yes |
-| rabbit\_default\_user | Default username to set for rabbit | `any` | n/a | yes |
-| rabbit\_volume\_size | Attached EBS volume size in GB - this is where docker data will be stored | `any` | n/a | yes |
-| region | The AWS region to create resources in. | `any` | n/a | yes |
-| root\_volume\_size | Root volume size in GB | `any` | n/a | yes |
-| ssh\_key\_name | The aws ssh key name. | `any` | n/a | yes |
-| target\_group\_arns | target groups to be applied to auto scaling group | `any` | n/a | yes |
-| vpc\_id | ID of the VPC to use | `any` | n/a | yes |
-| erlang\_version | The version of the rabbitmq that you want install. To see all versions click this link: https://dl.bintray.com/rabbitmq-erlang/debian/dists/ | `string` | `"erlang"` | no |
-| rabbit\_volume\_type | The type of rabbit volume. Can be standard, gp2, gp3, st1, sc1 or io1. | `string` | `"gp2"` | no |
-| rabbitmq\_version | The version of the rabbitmq that you want install. To see all versions click this link: https://dl.bintray.com/rabbitmq/debian/dists/ | `string` | `"main"` | no |
-| root\_volume\_type | The type of root volume. Can be standard, gp2, gp3, st1, sc1 or io1. | `string` | `"gp2"` | no |
+|------|-------------|------|---------|:--------:|
+| <a name="input_associate_public_ip_address"></a> [associate\_public\_ip\_address](#input\_associate\_public\_ip\_address) | Should created instances be publicly accessible (if the SG allows) | `any` | n/a | yes |
+| <a name="input_autoscaling_max_size"></a> [autoscaling\_max\_size](#input\_autoscaling\_max\_size) | defined the maximum amount of the nodes you want in your autoscaling group | `any` | n/a | yes |
+| <a name="input_autoscaling_min_size"></a> [autoscaling\_min\_size](#input\_autoscaling\_min\_size) | defined the minimum amount of the nodes you want in your autoscaling group | `any` | n/a | yes |
+| <a name="input_aws_access_key"></a> [aws\_access\_key](#input\_aws\_access\_key) | Used by rabbitmq to describe autoscaling group | `any` | n/a | yes |
+| <a name="input_aws_secret_key"></a> [aws\_secret\_key](#input\_aws\_secret\_key) | Used by rabbitmq to describe autoscaling group | `any` | n/a | yes |
+| <a name="input_cluster_fqdn"></a> [cluster\_fqdn](#input\_cluster\_fqdn) | n/a | `any` | n/a | yes |
+| <a name="input_desired_capacity"></a> [desired\_capacity](#input\_desired\_capacity) | defined how many node you want in your autoscaling group | `any` | n/a | yes |
+| <a name="input_environment"></a> [environment](#input\_environment) | Desired environment to use in custom ids and names EG: "staging" | `any` | n/a | yes |
+| <a name="input_erl_secret_cookie"></a> [erl\_secret\_cookie](#input\_erl\_secret\_cookie) | Used by rabbitmq to join a cluster | `any` | n/a | yes |
+| <a name="input_external_subnets"></a> [external\_subnets](#input\_external\_subnets) | External subnets of the VPC | `list(string)` | n/a | yes |
+| <a name="input_image_id"></a> [image\_id](#input\_image\_id) | Ubuntu or Debian based image compatible with the start script (Use aws optimized ubuntu) | `any` | n/a | yes |
+| <a name="input_ingress_private_cidr_blocks"></a> [ingress\_private\_cidr\_blocks](#input\_ingress\_private\_cidr\_blocks) | A list of CIDR block to allow traffic from (private usage) | `list(string)` | n/a | yes |
+| <a name="input_ingress_public_cidr_blocks"></a> [ingress\_public\_cidr\_blocks](#input\_ingress\_public\_cidr\_blocks) | A list of default CIDR blocks to allow traffic from (public usage) | `list(string)` | n/a | yes |
+| <a name="input_instance_ebs_optimized"></a> [instance\_ebs\_optimized](#input\_instance\_ebs\_optimized) | When set to true the instance will be launched with EBS optimized turned on | `any` | n/a | yes |
+| <a name="input_instance_type"></a> [instance\_type](#input\_instance\_type) | Rabbit node type instance | `any` | n/a | yes |
+| <a name="input_internet_public_cidr_blocks"></a> [internet\_public\_cidr\_blocks](#input\_internet\_public\_cidr\_blocks) | Public outbount to access internet | `list(string)` | n/a | yes |
+| <a name="input_name"></a> [name](#input\_name) | The cluster name, e.g cdn | `any` | n/a | yes |
+| <a name="input_rabbit_default_password"></a> [rabbit\_default\_password](#input\_rabbit\_default\_password) | Default password to set for rabbit | `any` | n/a | yes |
+| <a name="input_rabbit_default_user"></a> [rabbit\_default\_user](#input\_rabbit\_default\_user) | Default username to set for rabbit | `any` | n/a | yes |
+| <a name="input_rabbit_volume_size"></a> [rabbit\_volume\_size](#input\_rabbit\_volume\_size) | Attached EBS volume size in GB - this is where docker data will be stored | `any` | n/a | yes |
+| <a name="input_region"></a> [region](#input\_region) | The AWS region to create resources in. | `any` | n/a | yes |
+| <a name="input_root_volume_size"></a> [root\_volume\_size](#input\_root\_volume\_size) | Root volume size in GB | `any` | n/a | yes |
+| <a name="input_ssh_key_name"></a> [ssh\_key\_name](#input\_ssh\_key\_name) | The aws ssh key name. | `any` | n/a | yes |
+| <a name="input_target_group_arns"></a> [target\_group\_arns](#input\_target\_group\_arns) | target groups to be applied to auto scaling group | `any` | n/a | yes |
+| <a name="input_vpc_id"></a> [vpc\_id](#input\_vpc\_id) | ID of the VPC to use | `any` | n/a | yes |
+| <a name="input_erlang_version"></a> [erlang\_version](#input\_erlang\_version) | The version of the rabbitmq that you want install. To see all versions click this link: https://dl.bintray.com/rabbitmq-erlang/debian/dists/ | `string` | `"erlang"` | no |
+| <a name="input_rabbit_volume_type"></a> [rabbit\_volume\_type](#input\_rabbit\_volume\_type) | The type of rabbit volume. Can be standard, gp2, gp3, st1, sc1 or io1. | `string` | `"gp2"` | no |
+| <a name="input_rabbitmq_version"></a> [rabbitmq\_version](#input\_rabbitmq\_version) | The version of the rabbitmq that you want install. To see all versions click this link: https://dl.bintray.com/rabbitmq/debian/dists/ | `string` | `"main"` | no |
+| <a name="input_root_volume_type"></a> [root\_volume\_type](#input\_root\_volume\_type) | The type of root volume. Can be standard, gp2, gp3, st1, sc1 or io1. | `string` | `"gp2"` | no |
 
 ## Outputs
 
 | Name | Description |
 |------|-------------|
-| autoscaling\_group | Used by attachment target group |
-| autoscaling\_group\_name | n/a |
-| security\_group\_id | Security used by the nodes and share to the load balencer |
+| <a name="output_autoscaling_group"></a> [autoscaling\_group](#output\_autoscaling\_group) | Used by attachment target group |
+| <a name="output_autoscaling_group_name"></a> [autoscaling\_group\_name](#output\_autoscaling\_group\_name) | n/a |
+| <a name="output_security_group_id"></a> [security\_group\_id](#output\_security\_group\_id) | Security used by the nodes and share to the load balencer |
+
+## Module development
+
+Install git pre-commit hook from TF Modules CI.
+
+TF Modules CI includes `pre-commit` hook for automatic documentation generation, fmt check etc.
+
+### Install for Linux/MacOS
+
+```shell script
+mkdir -p .git/hooks && docker run --rm -e HOST_OS=${OSTYPE} nc-mss-app-docker.artifactory.corp.namecheap.net/nc/tf-modules-ci > .git/hooks/pre-commit && chmod +x .git/hooks/pre-commit
+```
+
+### Install for Windows
+
+Run the following script in `cmd` terminal.
+
+```shell script
+mkdir ".git\hooks" 2>NUL & docker run --rm -e HOST_OS=win nc-mss-app-docker.artifactory.corp.namecheap.net/nc/tf-modules-ci > .git\hooks\pre-commit
+```
+_Note: `PowerShell` and `git-bash` are not supported._
+
+
+#### Check Docker settings for Windows
+
+Allow `File sharing` for drive(s) with your code in `Docker` settings.
+
+[Read more](https://docs.microsoft.com/en-us/visualstudio/containers/troubleshooting-docker-errors?view=vs-2019)
 
 <!-- END OF PRE-COMMIT-TERRAFORM DOCS HOOK -->

@@ -1,55 +1,38 @@
-# Template use at launch to install docker
-# It will also lauch each docker container that are used to manage the state of our cluster
-# This is use to pass required settings from terraform template directly in the ED2 instance
-data "template_file" "rabbit-node" {
-  template = file("${path.module}/user_data/rabbitmq.sh")
+resource "aws_launch_template" "rabbit-node" {
+  name_prefix            = "${var.name}-rabbit-${var.environment}-"
+  image_id               = var.image_id
+  instance_type          = var.instance_type
+  key_name               = var.ssh_key_name
+  ebs_optimized          = var.instance_ebs_optimized
+  user_data              = base64encode(data.template_file.rabbit-node.rendered)
+  update_default_version = true
 
-  vars = {
-    AWS_REGION        = var.region
-    VPC_ID            = var.vpc_id
-    ERL_SECRET_COOKIE = var.erl_secret_cookie
-    AWS_ACCESS_KEY    = var.aws_access_key
-    AWS_SECRET_KEY    = var.aws_secret_key
-    RABBITMQ_VERSION  = var.rabbitmq_version
-    ERLANG_VERSION    = var.erlang_version
-    CLUSTER_NAME      = "${var.cluster_fqdn}-${var.name}-${var.environment}"
-    DEFAULT_USER      = var.rabbit_default_user
-    DEFAULT_PASS      = var.rabbit_default_password
-    ENVIRONMENT       = var.environment
-    SERVICE_NAME      = var.name
-  }
-}
-
-resource "aws_launch_configuration" "rabbit-node" {
-  name_prefix = "${var.name}-rabbit-${var.environment}-"
-
-  image_id      = var.image_id
-  instance_type = var.instance_type
-  ebs_optimized = var.instance_ebs_optimized
-
-  iam_instance_profile = aws_iam_instance_profile.ProxyInstanceProfile.name
-  key_name             = var.ssh_key_name
-
-  security_groups = [
-    aws_security_group.rabbit-cluster.id,
-    aws_security_group.rabbit-node.id,
-  ]
-
-  # User Data is what's run at start from the template file previously rendered
-  user_data                   = data.template_file.rabbit-node.rendered
-  associate_public_ip_address = var.associate_public_ip_address
-
-  # root
-  root_block_device {
-    volume_type = var.root_volume_type
-    volume_size = var.root_volume_size
+  iam_instance_profile {
+    name = aws_iam_instance_profile.ProxyInstanceProfile.name
   }
 
-  # rabbit
-  ebs_block_device {
+  network_interfaces {
+    associate_public_ip_address = var.associate_public_ip_address
+    security_groups = [
+      aws_security_group.rabbit-cluster.id,
+      aws_security_group.rabbit-node.id,
+    ]
+  }
+
+  block_device_mappings {
+    device_name = var.image_id.root_device_name
+    ebs {
+      volume_type = var.root_volume_type
+      volume_size = var.root_volume_size
+    }
+  }
+
+  block_device_mappings {
     device_name = "/dev/xvdcz"
-    volume_type = var.rabbit_volume_type
-    volume_size = var.rabbit_volume_size
+    ebs {
+      volume_type = var.rabbit_volume_type
+      volume_size = var.rabbit_volume_size
+    }
   }
 
   lifecycle {
@@ -60,16 +43,19 @@ resource "aws_launch_configuration" "rabbit-node" {
 resource "aws_autoscaling_group" "rabbit-node" {
   name = "${var.name}-rabbit-${var.environment}"
 
-  launch_configuration = aws_launch_configuration.rabbit-node.name
   vpc_zone_identifier  = var.external_subnets
   min_size             = var.autoscaling_min_size
   max_size             = var.autoscaling_max_size
   desired_capacity     = var.desired_capacity
-  termination_policies = ["OldestLaunchConfiguration", "Default"]
+  termination_policies = ["OldestLaunchTemplate", "Default"]
   target_group_arns    = var.target_group_arns
 
   health_check_type         = "EC2"
   health_check_grace_period = 300
+
+  launch_template {
+    name = aws_launch_template.rabbit-node.name
+  }
 
   tag {
     key                 = "Name"
