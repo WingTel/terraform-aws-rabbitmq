@@ -20,7 +20,7 @@ resource "aws_launch_template" "rabbit-node" {
   }
 
   block_device_mappings {
-    device_name = data.aws_ami.image.root_device_name
+    device_name = "/dev/xvda"
     ebs {
       volume_type = var.root_volume_type
       volume_size = var.root_volume_size

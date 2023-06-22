@@ -19,10 +19,3 @@ data "template_file" "rabbit-node" {
     SERVICE_NAME      = var.name
   }
 }
-
-data "aws_ami" "image" {
-  filter {
-    name   = "image-id"
-    values = [var.image_id]
-  }
-}

@@ -138,7 +138,6 @@ No modules.
 | [aws_launch_template.rabbit-node](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/launch_template) | resource |
 | [aws_security_group.rabbit-cluster](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/security_group) | resource |
 | [aws_security_group.rabbit-node](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/security_group) | resource |
-| [aws_ami.image](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/ami) | data source |
 | [template_file.rabbit-node](https://registry.terraform.io/providers/hashicorp/template/latest/docs/data-sources/file) | data source |
 
 ## Inputs
@@ -182,5 +181,33 @@ No modules.
 | <a name="output_autoscaling_group"></a> [autoscaling\_group](#output\_autoscaling\_group) | Used by attachment target group |
 | <a name="output_autoscaling_group_name"></a> [autoscaling\_group\_name](#output\_autoscaling\_group\_name) | n/a |
 | <a name="output_security_group_id"></a> [security\_group\_id](#output\_security\_group\_id) | Security used by the nodes and share to the load balencer |
+
+## Module development
+
+Install git pre-commit hook from TF Modules CI.
+
+TF Modules CI includes `pre-commit` hook for automatic documentation generation, fmt check etc.
+
+### Install for Linux/MacOS
+
+```shell script
+mkdir -p .git/hooks && docker run --rm -e HOST_OS=${OSTYPE} nc-mss-app-docker.artifactory.corp.namecheap.net/nc/tf-modules-ci > .git/hooks/pre-commit && chmod +x .git/hooks/pre-commit
+```
+
+### Install for Windows
+
+Run the following script in `cmd` terminal.
+
+```shell script
+mkdir ".git\hooks" 2>NUL & docker run --rm -e HOST_OS=win nc-mss-app-docker.artifactory.corp.namecheap.net/nc/tf-modules-ci > .git\hooks\pre-commit
+```
+_Note: `PowerShell` and `git-bash` are not supported._
+
+
+#### Check Docker settings for Windows
+
+Allow `File sharing` for drive(s) with your code in `Docker` settings.
+
+[Read more](https://docs.microsoft.com/en-us/visualstudio/containers/troubleshooting-docker-errors?view=vs-2019)
 
 <!-- END OF PRE-COMMIT-TERRAFORM DOCS HOOK -->
