@@ -17,10 +17,6 @@ variable "region" {
   description = "The AWS region to create resources in."
 }
 
-variable "az_count" {
-  description = "Number of AZs to cover in a given AWS region"
-}
-
 variable "erl_secret_cookie" {
   description = "Used by rabbitmq to join a cluster"
 }
@@ -132,14 +128,6 @@ variable "internet_public_cidr_blocks" {
 # ------------------------------------------------------
 #  Auto Scaling Group parameters
 # ------------------------------------------------------
-
-variable "cpu_high_limit" {
-  description = "Value of CPU Usage triggering a scale up"
-}
-
-variable "cpu_low_limit" {
-  description = "Value of CPU Usage triggering a scale down"
-}
 
 variable "desired_capacity" {
   description = "defined how many node you want in your autoscaling group"
