@@ -172,6 +172,7 @@ No modules.
 | <a name="input_erlang_version"></a> [erlang\_version](#input\_erlang\_version) | The version of the rabbitmq that you want install. To see all versions click this link: https://dl.bintray.com/rabbitmq-erlang/debian/dists/ | `string` | `"erlang"` | no |
 | <a name="input_rabbit_volume_type"></a> [rabbit\_volume\_type](#input\_rabbit\_volume\_type) | The type of rabbit volume. Can be standard, gp2, gp3, st1, sc1 or io1. | `string` | `"gp2"` | no |
 | <a name="input_rabbitmq_version"></a> [rabbitmq\_version](#input\_rabbitmq\_version) | The version of the rabbitmq that you want install. To see all versions click this link: https://dl.bintray.com/rabbitmq/debian/dists/ | `string` | `"main"` | no |
+| <a name="input_retention_in_days"></a> [retention\_in\_days](#input\_retention\_in\_days) | Specifies the number of days you want to retain log events in the specified log group | `number` | `5` | no |
 | <a name="input_root_volume_type"></a> [root\_volume\_type](#input\_root\_volume\_type) | The type of root volume. Can be standard, gp2, gp3, st1, sc1 or io1. | `string` | `"gp2"` | no |
 
 ## Outputs
