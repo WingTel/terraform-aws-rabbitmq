@@ -144,3 +144,13 @@ variable "autoscaling_max_size" {
 variable "target_group_arns" {
   description = "target groups to be applied to auto scaling group"
 }
+
+# ------------------------------------------------------
+#  CloudWatch parameters
+# ------------------------------------------------------
+
+variable "retention_in_days" {
+  description = "Specifies the number of days you want to retain log events in the specified log group"
+  type        = number
+  default     = 5
+}
