@@ -163,7 +163,7 @@ fi
 PLUGIN_LIST="$${PLUGIN_LIST}]."
 
 cat <<EOF > /etc/rabbitmq/enabled_plugins
-${PLUGIN_LIST}
+$${PLUGIN_LIST}
 EOF
 chown rabbitmq:rabbitmq /etc/rabbitmq/enabled_plugins
 chmod 640 /etc/rabbitmq/enabled_plugins
