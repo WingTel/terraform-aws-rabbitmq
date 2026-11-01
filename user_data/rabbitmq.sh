@@ -9,38 +9,64 @@ set -o pipefail # capture fail exit codes in piped commands
 # ----------------------------------------
 export MOUNT_POINT=/var/lib/rabbitmq
 
-apt-get -y update
+# Debian 10 (buster) is EOL and its metadata is moved to archive.debian.org.
+# Keep apt working by disabling the expired validity check and pointing to the archive URLs.
+echo 'Acquire::Check-Valid-Until "false";' > /etc/apt/apt.conf.d/99no-check-valid-until
+cat <<'EOF' > /etc/apt/sources.list
+deb http://archive.debian.org/debian buster main
+deb http://archive.debian.org/debian buster-updates main
+deb http://archive.debian.org/debian-security buster/updates main
+EOF
+
+apt-get -y update || apt-get -o Acquire::Check-Valid-Until=false -y update
 apt-get -y install xfsprogs
 
 INSTANCE_TYPE=$(wget -qO- http://169.254.169.254/latest/meta-data/instance-type | cut -d '.' -f1)
 [[ $INSTANCE_TYPE = "t2" ]] && EBS_NAME="xvdcz" || EBS_NAME="nvme"
 
-# If nitro based instances
+# If nitro based instances, choose the extra EBS volume. The root volume is typically
+# nvme1n1p1 and the attached data volume is already mounted /var/lib/rabbitmq in some
+# instances, so retrying mkfs on a mounted XFS disk will fail.
 if [[ $EBS_NAME = "nvme" ]]; then
-  # Test which block is the ebs added volume it's the one returning `data`
-  # since it's not yet formated and mounted
-  # disable failsafe pipefail here so IS_NOT_ROOT can return 0
   set +o pipefail
-  IS_NOT_ROOT=$(file -s /dev/nvme0n1 | grep "data" | wc -l)
+  for candidate in /dev/nvme0n1 /dev/nvme1n1 /dev/nvme2n1; do
+    if [[ ! -e "$candidate" ]]; then
+      continue
+    fi
+
+    fs_type=$(blkid -o value -s TYPE "$candidate" 2>/dev/null || true)
+    if [[ -n "$fs_type" && "$fs_type" == "xfs" ]] && mountpoint -q "$MOUNT_POINT"; then
+      EBS_NAME="$${candidate#/dev/}"
+      break
+    fi
+
+    if [[ -z "$fs_type" ]]; then
+      EBS_NAME="$${candidate#/dev/}"
+      break
+    fi
+  done
   set -o pipefail
-  [[ $IS_NOT_ROOT = "1" ]] && EBS_NAME="nvme0n1" || EBS_NAME="nvme1n1"
 fi
 
-# Following AWS procadure (https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ebs-using-volumes.html)
-
-mkfs -t xfs /dev/$EBS_NAME
+# Following AWS procedure (https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ebs-using-volumes.html)
+# Only format the device if it is not already an XFS filesystem.
+if ! blkid /dev/$EBS_NAME 2>/dev/null | grep -qi 'TYPE="xfs"'; then
+  mkfs -t xfs -f /dev/$EBS_NAME
+fi
 
 # Where you which to mount the volume after (e.g: /var/lib/docker)
-mkdir -p $MOUNT_POINT
+mkdir -p "$MOUNT_POINT"
 
-# Mount the formated volume
-mount /dev/$EBS_NAME $MOUNT_POINT
+# Mount the formatted volume only if it is not already mounted
+if ! mountpoint -q "$MOUNT_POINT"; then
+  mount /dev/$EBS_NAME "$MOUNT_POINT"
+fi
 
 # Device is mounted now we shall protect against losing the device after reboot
+EBS_UUID=$(blkid -s UUID -o value /dev/$EBS_NAME)
 
-EBS_UUID=$(blkid | grep $EBS_NAME | egrep '[0-9a-f]{8}-([0-9a-f]{4}-){3}[0-9a-f]{12}' -o)
-
-echo "UUID=$EBS_UUID $MOUNT_POINT xfs defaults,nofail 0 2" >> /etc/fstab
+grep -q "^UUID=$EBS_UUID $MOUNT_POINT xfs" /etc/fstab || \
+  echo "UUID=$EBS_UUID $MOUNT_POINT xfs defaults,nofail 0 2" >> /etc/fstab
 
 # ----------------------------------------
 # Setpu Rabbitmq Configuration
@@ -52,20 +78,38 @@ export VPC_ID="${VPC_ID}"
 export ERL_SECRET_COOKIE="${ERL_SECRET_COOKIE}"
 export AWS_SECRET_KEY="${AWS_SECRET_KEY}"
 export AWS_ACCESS_KEY="${AWS_ACCESS_KEY}"
-export CLUSTER_NAME=${CLUSTER_NAME}
-export RABBITMQ_VERSION=${RABBITMQ_VERSION}
-export ERLANG_VERSION=${ERLANG_VERSION}
-export DEFAULT_USER=${DEFAULT_USER}
-export DEFAULT_PASS=${DEFAULT_PASS}
-export ENVIRONMENT=${ENVIRONMENT}
-export SERVICE_NAME=${SERVICE_NAME}
+export CLUSTER_NAME="${CLUSTER_NAME}"
+export RABBITMQ_VERSION="${RABBITMQ_VERSION}"
+export ERLANG_VERSION="${ERLANG_VERSION}"
+export DEFAULT_USER="${DEFAULT_USER}"
+export DEFAULT_PASS="${DEFAULT_PASS}"
+export ENVIRONMENT="${ENVIRONMENT}"
+export SERVICE_NAME="${SERVICE_NAME}"
 
 mkdir -p /etc/rabbitmq
 
-echo -n $ERL_SECRET_COOKIE > /var/lib/rabbitmq/.erlang.cookie
+# The rabbitmq system user is created by the Debian package install, but this script
+# can run before that on a fresh instance. Ensure it exists before any ownership change.
+if ! id -u rabbitmq >/dev/null 2>&1; then
+  useradd --system --home-dir /var/lib/rabbitmq --shell /usr/sbin/nologin rabbitmq
+fi
+
+# rabbitmq-env.conf must be shell syntax only. Do not place "default_user = ..." here.
+cat <<EOF > /etc/rabbitmq/rabbitmq-env.conf
+RABBITMQ_DEFAULT_USER=${DEFAULT_USER}
+RABBITMQ_DEFAULT_PASS=${DEFAULT_PASS}
+RABBITMQ_ERLANG_COOKIE=${ERL_SECRET_COOKIE}
+EOF
+chown rabbitmq:rabbitmq /etc/rabbitmq/rabbitmq-env.conf
+chmod 640 /etc/rabbitmq/rabbitmq-env.conf
+
+# Store the Erlang cookie in the expected RabbitMQ location.
+echo -n "${ERL_SECRET_COOKIE}" > /var/lib/rabbitmq/.erlang.cookie
+chown rabbitmq:rabbitmq /var/lib/rabbitmq/.erlang.cookie
 chmod 600 /var/lib/rabbitmq/.erlang.cookie
 
-cat << EndOfConfig >> /etc/rabbitmq/rabbitmq.conf
+# rabbitmq.conf is the proper file for broker settings (key = value format).
+cat <<EOF > /etc/rabbitmq/rabbitmq.conf
 ##
 ## Security, Access Control
 ## ==============
@@ -73,50 +117,56 @@ cat << EndOfConfig >> /etc/rabbitmq/rabbitmq.conf
 
 default_user = ${DEFAULT_USER}
 default_pass = ${DEFAULT_PASS}
-loopback_users.guest                           = false
+loopback_users.guest = false
 
 ## Networking
 ## ====================
 ##
-## Related doc guide: https://rabbitmq.com/networking.html.
-##
-## By default, RabbitMQ will listen on all interfaces, using
-## the standard (reserved) AMQP 0-9-1 and 1.0 port.
-##
 
-listeners.tcp.default                          = 5672
-management.listener.port                       = 15672
-management.listener.ssl                        = false
+listeners.tcp.default = 5672
+management.listener.port = 15672
+management.listener.ssl = false
 
-hipe_compile                                   = false
-
-consumer_timeout                               = 86400000  # 24 hours
+hipe_compile = false
+consumer_timeout = 86400000
 
 ##
 ## Clustering
 ## =====================
 ##
 
-cluster_formation.peer_discovery_backend       = rabbit_peer_discovery_aws
-cluster_formation.aws.region                   = ${AWS_REGION}
-cluster_formation.aws.access_key_id            = ${AWS_ACCESS_KEY}
-cluster_formation.aws.secret_key               = ${AWS_SECRET_KEY}
-cluster_formation.aws.use_autoscaling_group    = true
-
-
-EndOfConfig
+cluster_formation.peer_discovery_backend = rabbit_peer_discovery_aws
+cluster_formation.aws.region = ${AWS_REGION}
+cluster_formation.aws.access_key_id = ${AWS_ACCESS_KEY}
+cluster_formation.aws.secret_key = ${AWS_SECRET_KEY}
+cluster_formation.aws.use_autoscaling_group = true
+EOF
+chown rabbitmq:rabbitmq /etc/rabbitmq/rabbitmq.conf
+chmod 640 /etc/rabbitmq/rabbitmq.conf
 
 RABBITMQ_PLUGINS_FOLDER="/usr/lib/rabbitmq/plugins"
+mkdir -p "$RABBITMQ_PLUGINS_FOLDER"
 
-mkdir -p $RABBITMQ_PLUGINS_FOLDER
+# Keep only plugins that are known to be compatible with the Debian 10 RabbitMQ package.
+# The message-deduplication plugin was built for a newer Erlang runtime and crashes the broker
+# during startup with: "plugin_built_with_incompatible_erlang".
+# The queue master balancer plugin may also be version-sensitive; if compatibility issues appear,
+# keep the base RabbitMQ plugins only and reintroduce extras one by one.
+if [ -n "$${RABBITMQ_PLUGIN_QUEUE_MASTER_BALANCER:-}" ] && [ "$${RABBITMQ_PLUGIN_QUEUE_MASTER_BALANCER}" = "true" ]; then
+  wget "https://github.com/Ayanda-D/rabbitmq-queue-master-balancer/releases/download/v0.0.5/rabbitmq_queue_master_balancer-0.0.5.ez" -O "$RABBITMQ_PLUGINS_FOLDER/rabbitmq_queue_master_balancer-0.0.5.ez"
+fi
 
-wget "https://github.com/noxdafox/rabbitmq-message-deduplication/releases/download/0.5.1/elixir-1.12.2.ez" -O "$RABBITMQ_PLUGINS_FOLDER/elixir-1.12.2.ez"
-wget "https://github.com/noxdafox/rabbitmq-message-deduplication/releases/download/0.5.1/rabbitmq_message_deduplication-0.5.1.ez" -O "$RABBITMQ_PLUGINS_FOLDER/rabbitmq_message_deduplication-0.5.1.ez"
-wget "https://github.com/Ayanda-D/rabbitmq-queue-master-balancer/releases/download/v0.0.5/rabbitmq_queue_master_balancer-0.0.5.ez" -O "$RABBITMQ_PLUGINS_FOLDER/rabbitmq_queue_master_balancer-0.0.5.ez"
+PLUGIN_LIST="[rabbitmq_shovel,rabbitmq_shovel_management,rabbitmq_management,rabbitmq_peer_discovery_aws"
+if [ -n "$${RABBITMQ_PLUGIN_QUEUE_MASTER_BALANCER:-}" ] && [ "$${RABBITMQ_PLUGIN_QUEUE_MASTER_BALANCER}" = "true" ]; then
+  PLUGIN_LIST="$${PLUGIN_LIST},rabbitmq_queue_master_balancer"
+fi
+PLUGIN_LIST="$${PLUGIN_LIST}]."
 
-RABBITMQ_PLUGINS="[rabbitmq_shovel,rabbitmq_shovel_management,rabbitmq_management,rabbitmq_peer_discovery_aws,rabbitmq_queue_master_balancer,rabbitmq_tracing,rabbitmq_message_deduplication]."
-
-echo $RABBITMQ_PLUGINS > /etc/rabbitmq/enabled_plugins
+cat <<EOF > /etc/rabbitmq/enabled_plugins
+$${PLUGIN_LIST}
+EOF
+chown rabbitmq:rabbitmq /etc/rabbitmq/enabled_plugins
+chmod 640 /etc/rabbitmq/enabled_plugins
 
 # ----------------------------------------
 # Install Rabbitmq
@@ -127,38 +177,19 @@ echo $RABBITMQ_PLUGINS > /etc/rabbitmq/enabled_plugins
 ## Install prerequisites
 apt-get install curl gnupg apt-transport-https -y
 
-## Team RabbitMQ's main signing key
-curl -1sLf "https://keys.openpgp.org/vks/v1/by-fingerprint/0A9AF2115F4687BD29803A206B73A36E6026DFCA" | sudo gpg --dearmor | sudo tee /usr/share/keyrings/com.rabbitmq.team.gpg > /dev/null
-## Cloudsmith: modern Erlang repository
-curl -1sLf https://dl.cloudsmith.io/public/rabbitmq/rabbitmq-erlang/gpg.E495BB49CC4BBE5B.key | sudo gpg --dearmor | sudo tee /usr/share/keyrings/io.cloudsmith.rabbitmq.E495BB49CC4BBE5B.gpg > /dev/null
-## Cloudsmith: RabbitMQ repository
-curl -1sLf https://dl.cloudsmith.io/public/rabbitmq/rabbitmq-server/gpg.9F4587F226208342.key | sudo gpg --dearmor | sudo tee /usr/share/keyrings/io.cloudsmith.rabbitmq.9F4587F226208342.gpg > /dev/null
-
-## Add apt repositories maintained by Team RabbitMQ
-sudo tee /etc/apt/sources.list.d/rabbitmq.list <<EOF
-## Provides modern Erlang/OTP releases
+## Debian 10 (buster) is EOL and the newer Team RabbitMQ/Cloudsmith repositories
+## do not publish a working buster key/repo set. Use the stock Debian 10 packages
+## instead to avoid the 404 key and repository errors seen in cloud-init.
 ##
-deb [signed-by=/usr/share/keyrings/io.cloudsmith.rabbitmq.E495BB49CC4BBE5B.gpg] https://dl.cloudsmith.io/public/rabbitmq/rabbitmq-erlang/deb/ubuntu bionic main
-deb-src [signed-by=/usr/share/keyrings/io.cloudsmith.rabbitmq.E495BB49CC4BBE5B.gpg] https://dl.cloudsmith.io/public/rabbitmq/rabbitmq-erlang/deb/ubuntu bionic main
+## If a newer RabbitMQ version is required, the instance should be migrated off
+## Debian 10 to a supported release, because the RabbitMQ Team no longer keeps
+## a functional buster repository.
 
-## Provides RabbitMQ
-##
-deb [signed-by=/usr/share/keyrings/io.cloudsmith.rabbitmq.9F4587F226208342.gpg] https://dl.cloudsmith.io/public/rabbitmq/rabbitmq-server/deb/ubuntu bionic main
-deb-src [signed-by=/usr/share/keyrings/io.cloudsmith.rabbitmq.9F4587F226208342.gpg] https://dl.cloudsmith.io/public/rabbitmq/rabbitmq-server/deb/ubuntu bionic main
-EOF
+## Update package indices from the Debian 10 archive mirror
+sudo apt-get -o Acquire::Check-Valid-Until=false update -y
 
-## Update package indices
-sudo apt-get update -y
-
-## Install Erlang packages
-sudo apt-get install -y erlang-base \
-                        erlang-asn1 erlang-crypto erlang-eldap erlang-ftp erlang-inets \
-                        erlang-mnesia erlang-os-mon erlang-parsetools erlang-public-key \
-                        erlang-runtime-tools erlang-snmp erlang-ssl \
-                        erlang-syntax-tools erlang-tftp erlang-tools erlang-xmerl
-
-## Install rabbitmq-server and its dependencies
-sudo apt-get install rabbitmq-server -y --fix-missing
+## Install the RabbitMQ package from Debian 10 repositories
+sudo apt-get install -y rabbitmq-server
 
 rabbitmqctl set_cluster_name ${CLUSTER_NAME}
 
