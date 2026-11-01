@@ -37,12 +37,12 @@ if [[ $EBS_NAME = "nvme" ]]; then
 
     fs_type=$(blkid -o value -s TYPE "$candidate" 2>/dev/null || true)
     if [[ -n "$fs_type" && "$fs_type" == "xfs" ]] && mountpoint -q "$MOUNT_POINT"; then
-      EBS_NAME="${candidate#/dev/}"
+      EBS_NAME="$${candidate#/dev/}"
       break
     fi
 
     if [[ -z "$fs_type" ]]; then
-      EBS_NAME="${candidate#/dev/}"
+      EBS_NAME="$${candidate#/dev/}"
       break
     fi
   done
