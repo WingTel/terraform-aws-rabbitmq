@@ -152,15 +152,15 @@ mkdir -p "$RABBITMQ_PLUGINS_FOLDER"
 # during startup with: "plugin_built_with_incompatible_erlang".
 # The queue master balancer plugin may also be version-sensitive; if compatibility issues appear,
 # keep the base RabbitMQ plugins only and reintroduce extras one by one.
-if [ -n "${RABBITMQ_PLUGIN_QUEUE_MASTER_BALANCER:-}" ] && [ "${RABBITMQ_PLUGIN_QUEUE_MASTER_BALANCER}" = "true" ]; then
+if [ -n "$${RABBITMQ_PLUGIN_QUEUE_MASTER_BALANCER:-}" ] && [ "$${RABBITMQ_PLUGIN_QUEUE_MASTER_BALANCER}" = "true" ]; then
   wget "https://github.com/Ayanda-D/rabbitmq-queue-master-balancer/releases/download/v0.0.5/rabbitmq_queue_master_balancer-0.0.5.ez" -O "$RABBITMQ_PLUGINS_FOLDER/rabbitmq_queue_master_balancer-0.0.5.ez"
 fi
 
 PLUGIN_LIST="[rabbitmq_shovel,rabbitmq_shovel_management,rabbitmq_management,rabbitmq_peer_discovery_aws"
-if [ -n "${RABBITMQ_PLUGIN_QUEUE_MASTER_BALANCER:-}" ] && [ "${RABBITMQ_PLUGIN_QUEUE_MASTER_BALANCER}" = "true" ]; then
-  PLUGIN_LIST="${PLUGIN_LIST},rabbitmq_queue_master_balancer"
+if [ -n "$${RABBITMQ_PLUGIN_QUEUE_MASTER_BALANCER:-}" ] && [ "$${RABBITMQ_PLUGIN_QUEUE_MASTER_BALANCER}" = "true" ]; then
+  PLUGIN_LIST="$${PLUGIN_LIST},rabbitmq_queue_master_balancer"
 fi
-PLUGIN_LIST="${PLUGIN_LIST}]."
+PLUGIN_LIST="$${PLUGIN_LIST}]."
 
 cat <<EOF > /etc/rabbitmq/enabled_plugins
 ${PLUGIN_LIST}
