@@ -16,7 +16,6 @@ cat <<'EOF' > /etc/apt/sources.list
 deb http://archive.debian.org/debian buster main
 deb http://archive.debian.org/debian buster-updates main
 deb http://archive.debian.org/debian-security buster/updates main
-deb http://archive.debian.org/debian buster-backports main
 EOF
 
 apt-get -y update || apt-get -o Acquire::Check-Valid-Until=false -y update
