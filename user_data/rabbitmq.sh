@@ -88,6 +88,12 @@ export SERVICE_NAME="${SERVICE_NAME}"
 
 mkdir -p /etc/rabbitmq
 
+# The rabbitmq system user is created by the Debian package install, but this script
+# can run before that on a fresh instance. Ensure it exists before any ownership change.
+if ! id -u rabbitmq >/dev/null 2>&1; then
+  useradd --system --home-dir /var/lib/rabbitmq --shell /usr/sbin/nologin rabbitmq
+fi
+
 # rabbitmq-env.conf must be shell syntax only. Do not place "default_user = ..." here.
 cat <<EOF > /etc/rabbitmq/rabbitmq-env.conf
 RABBITMQ_DEFAULT_USER=${DEFAULT_USER}
