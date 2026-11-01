@@ -94,10 +94,12 @@ RABBITMQ_DEFAULT_USER=${DEFAULT_USER}
 RABBITMQ_DEFAULT_PASS=${DEFAULT_PASS}
 RABBITMQ_ERLANG_COOKIE=${ERL_SECRET_COOKIE}
 EOF
-chmod 600 /etc/rabbitmq/rabbitmq-env.conf
+chown rabbitmq:rabbitmq /etc/rabbitmq/rabbitmq-env.conf
+chmod 640 /etc/rabbitmq/rabbitmq-env.conf
 
 # Store the Erlang cookie in the expected RabbitMQ location.
 echo -n "${ERL_SECRET_COOKIE}" > /var/lib/rabbitmq/.erlang.cookie
+chown rabbitmq:rabbitmq /var/lib/rabbitmq/.erlang.cookie
 chmod 600 /var/lib/rabbitmq/.erlang.cookie
 
 # rabbitmq.conf is the proper file for broker settings (key = value format).
@@ -133,6 +135,8 @@ cluster_formation.aws.access_key_id = ${AWS_ACCESS_KEY}
 cluster_formation.aws.secret_key = ${AWS_SECRET_KEY}
 cluster_formation.aws.use_autoscaling_group = true
 EOF
+chown rabbitmq:rabbitmq /etc/rabbitmq/rabbitmq.conf
+chmod 640 /etc/rabbitmq/rabbitmq.conf
 
 RABBITMQ_PLUGINS_FOLDER="/usr/lib/rabbitmq/plugins"
 mkdir -p "$RABBITMQ_PLUGINS_FOLDER"
@@ -144,6 +148,8 @@ wget "https://github.com/Ayanda-D/rabbitmq-queue-master-balancer/releases/downlo
 cat <<EOF > /etc/rabbitmq/enabled_plugins
 [rabbitmq_shovel,rabbitmq_shovel_management,rabbitmq_management,rabbitmq_peer_discovery_aws,rabbitmq_queue_master_balancer,rabbitmq_tracing,rabbitmq_message_deduplication].
 EOF
+chown rabbitmq:rabbitmq /etc/rabbitmq/enabled_plugins
+chmod 640 /etc/rabbitmq/enabled_plugins
 
 # ----------------------------------------
 # Install Rabbitmq
