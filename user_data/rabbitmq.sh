@@ -9,38 +9,65 @@ set -o pipefail # capture fail exit codes in piped commands
 # ----------------------------------------
 export MOUNT_POINT=/var/lib/rabbitmq
 
-apt-get -y update
+# Debian 10 (buster) is EOL and its metadata is moved to archive.debian.org.
+# Keep apt working by disabling the expired validity check and pointing to the archive URLs.
+echo 'Acquire::Check-Valid-Until "false";' > /etc/apt/apt.conf.d/99no-check-valid-until
+cat <<'EOF' > /etc/apt/sources.list
+deb http://archive.debian.org/debian buster main
+deb http://archive.debian.org/debian buster-updates main
+deb http://archive.debian.org/debian-security buster/updates main
+deb http://archive.debian.org/debian buster-backports main
+EOF
+
+apt-get -y update || apt-get -o Acquire::Check-Valid-Until=false -y update
 apt-get -y install xfsprogs
 
 INSTANCE_TYPE=$(wget -qO- http://169.254.169.254/latest/meta-data/instance-type | cut -d '.' -f1)
 [[ $INSTANCE_TYPE = "t2" ]] && EBS_NAME="xvdcz" || EBS_NAME="nvme"
 
-# If nitro based instances
+# If nitro based instances, choose the extra EBS volume. The root volume is typically
+# nvme1n1p1 and the attached data volume is already mounted /var/lib/rabbitmq in some
+# instances, so retrying mkfs on a mounted XFS disk will fail.
 if [[ $EBS_NAME = "nvme" ]]; then
-  # Test which block is the ebs added volume it's the one returning `data`
-  # since it's not yet formated and mounted
-  # disable failsafe pipefail here so IS_NOT_ROOT can return 0
   set +o pipefail
-  IS_NOT_ROOT=$(file -s /dev/nvme0n1 | grep "data" | wc -l)
+  for candidate in /dev/nvme0n1 /dev/nvme1n1 /dev/nvme2n1; do
+    if [[ ! -e "$candidate" ]]; then
+      continue
+    fi
+
+    fs_type=$(blkid -o value -s TYPE "$candidate" 2>/dev/null || true)
+    if [[ -n "$fs_type" && "$fs_type" == "xfs" ]] && mountpoint -q "$MOUNT_POINT"; then
+      EBS_NAME="${candidate#/dev/}"
+      break
+    fi
+
+    if [[ -z "$fs_type" ]]; then
+      EBS_NAME="${candidate#/dev/}"
+      break
+    fi
+  done
   set -o pipefail
-  [[ $IS_NOT_ROOT = "1" ]] && EBS_NAME="nvme0n1" || EBS_NAME="nvme1n1"
 fi
 
-# Following AWS procadure (https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ebs-using-volumes.html)
-
-mkfs -t xfs /dev/$EBS_NAME
+# Following AWS procedure (https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ebs-using-volumes.html)
+# Only format the device if it is not already an XFS filesystem.
+if ! blkid /dev/$EBS_NAME 2>/dev/null | grep -qi 'TYPE="xfs"'; then
+  mkfs -t xfs -f /dev/$EBS_NAME
+fi
 
 # Where you which to mount the volume after (e.g: /var/lib/docker)
-mkdir -p $MOUNT_POINT
+mkdir -p "$MOUNT_POINT"
 
-# Mount the formated volume
-mount /dev/$EBS_NAME $MOUNT_POINT
+# Mount the formatted volume only if it is not already mounted
+if ! mountpoint -q "$MOUNT_POINT"; then
+  mount /dev/$EBS_NAME "$MOUNT_POINT"
+fi
 
 # Device is mounted now we shall protect against losing the device after reboot
+EBS_UUID=$(blkid -s UUID -o value /dev/$EBS_NAME)
 
-EBS_UUID=$(blkid | grep $EBS_NAME | egrep '[0-9a-f]{8}-([0-9a-f]{4}-){3}[0-9a-f]{12}' -o)
-
-echo "UUID=$EBS_UUID $MOUNT_POINT xfs defaults,nofail 0 2" >> /etc/fstab
+grep -q "^UUID=$EBS_UUID $MOUNT_POINT xfs" /etc/fstab || \
+  echo "UUID=$EBS_UUID $MOUNT_POINT xfs defaults,nofail 0 2" >> /etc/fstab
 
 # ----------------------------------------
 # Setpu Rabbitmq Configuration
