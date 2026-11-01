@@ -147,12 +147,23 @@ chmod 640 /etc/rabbitmq/rabbitmq.conf
 RABBITMQ_PLUGINS_FOLDER="/usr/lib/rabbitmq/plugins"
 mkdir -p "$RABBITMQ_PLUGINS_FOLDER"
 
-wget "https://github.com/noxdafox/rabbitmq-message-deduplication/releases/download/0.5.1/elixir-1.12.2.ez" -O "$RABBITMQ_PLUGINS_FOLDER/elixir-1.12.2.ez"
-wget "https://github.com/noxdafox/rabbitmq-message-deduplication/releases/download/0.5.1/rabbitmq_message_deduplication-0.5.1.ez" -O "$RABBITMQ_PLUGINS_FOLDER/rabbitmq_message_deduplication-0.5.1.ez"
-wget "https://github.com/Ayanda-D/rabbitmq-queue-master-balancer/releases/download/v0.0.5/rabbitmq_queue_master_balancer-0.0.5.ez" -O "$RABBITMQ_PLUGINS_FOLDER/rabbitmq_queue_master_balancer-0.0.5.ez"
+# Keep only plugins that are known to be compatible with the Debian 10 RabbitMQ package.
+# The message-deduplication plugin was built for a newer Erlang runtime and crashes the broker
+# during startup with: "plugin_built_with_incompatible_erlang".
+# The queue master balancer plugin may also be version-sensitive; if compatibility issues appear,
+# keep the base RabbitMQ plugins only and reintroduce extras one by one.
+if [ -n "${RABBITMQ_PLUGIN_QUEUE_MASTER_BALANCER:-}" ] && [ "${RABBITMQ_PLUGIN_QUEUE_MASTER_BALANCER}" = "true" ]; then
+  wget "https://github.com/Ayanda-D/rabbitmq-queue-master-balancer/releases/download/v0.0.5/rabbitmq_queue_master_balancer-0.0.5.ez" -O "$RABBITMQ_PLUGINS_FOLDER/rabbitmq_queue_master_balancer-0.0.5.ez"
+fi
+
+PLUGIN_LIST="[rabbitmq_shovel,rabbitmq_shovel_management,rabbitmq_management,rabbitmq_peer_discovery_aws"
+if [ -n "${RABBITMQ_PLUGIN_QUEUE_MASTER_BALANCER:-}" ] && [ "${RABBITMQ_PLUGIN_QUEUE_MASTER_BALANCER}" = "true" ]; then
+  PLUGIN_LIST="${PLUGIN_LIST},rabbitmq_queue_master_balancer"
+fi
+PLUGIN_LIST="${PLUGIN_LIST}]."
 
 cat <<EOF > /etc/rabbitmq/enabled_plugins
-[rabbitmq_shovel,rabbitmq_shovel_management,rabbitmq_management,rabbitmq_peer_discovery_aws,rabbitmq_queue_master_balancer,rabbitmq_tracing,rabbitmq_message_deduplication].
+${PLUGIN_LIST}
 EOF
 chown rabbitmq:rabbitmq /etc/rabbitmq/enabled_plugins
 chmod 640 /etc/rabbitmq/enabled_plugins
