@@ -78,20 +78,30 @@ export VPC_ID="${VPC_ID}"
 export ERL_SECRET_COOKIE="${ERL_SECRET_COOKIE}"
 export AWS_SECRET_KEY="${AWS_SECRET_KEY}"
 export AWS_ACCESS_KEY="${AWS_ACCESS_KEY}"
-export CLUSTER_NAME=${CLUSTER_NAME}
-export RABBITMQ_VERSION=${RABBITMQ_VERSION}
-export ERLANG_VERSION=${ERLANG_VERSION}
-export DEFAULT_USER=${DEFAULT_USER}
-export DEFAULT_PASS=${DEFAULT_PASS}
-export ENVIRONMENT=${ENVIRONMENT}
-export SERVICE_NAME=${SERVICE_NAME}
+export CLUSTER_NAME="${CLUSTER_NAME}"
+export RABBITMQ_VERSION="${RABBITMQ_VERSION}"
+export ERLANG_VERSION="${ERLANG_VERSION}"
+export DEFAULT_USER="${DEFAULT_USER}"
+export DEFAULT_PASS="${DEFAULT_PASS}"
+export ENVIRONMENT="${ENVIRONMENT}"
+export SERVICE_NAME="${SERVICE_NAME}"
 
 mkdir -p /etc/rabbitmq
 
-echo -n $ERL_SECRET_COOKIE > /var/lib/rabbitmq/.erlang.cookie
+# rabbitmq-env.conf must be shell syntax only. Do not place "default_user = ..." here.
+cat <<EOF > /etc/rabbitmq/rabbitmq-env.conf
+RABBITMQ_DEFAULT_USER=${DEFAULT_USER}
+RABBITMQ_DEFAULT_PASS=${DEFAULT_PASS}
+RABBITMQ_ERLANG_COOKIE=${ERL_SECRET_COOKIE}
+EOF
+chmod 600 /etc/rabbitmq/rabbitmq-env.conf
+
+# Store the Erlang cookie in the expected RabbitMQ location.
+echo -n "${ERL_SECRET_COOKIE}" > /var/lib/rabbitmq/.erlang.cookie
 chmod 600 /var/lib/rabbitmq/.erlang.cookie
 
-cat << EndOfConfig >> /etc/rabbitmq/rabbitmq.conf
+# rabbitmq.conf is the proper file for broker settings (key = value format).
+cat <<EOF > /etc/rabbitmq/rabbitmq.conf
 ##
 ## Security, Access Control
 ## ==============
@@ -99,50 +109,41 @@ cat << EndOfConfig >> /etc/rabbitmq/rabbitmq.conf
 
 default_user = ${DEFAULT_USER}
 default_pass = ${DEFAULT_PASS}
-loopback_users.guest                           = false
+loopback_users.guest = false
 
 ## Networking
 ## ====================
 ##
-## Related doc guide: https://rabbitmq.com/networking.html.
-##
-## By default, RabbitMQ will listen on all interfaces, using
-## the standard (reserved) AMQP 0-9-1 and 1.0 port.
-##
 
-listeners.tcp.default                          = 5672
-management.listener.port                       = 15672
-management.listener.ssl                        = false
+listeners.tcp.default = 5672
+management.listener.port = 15672
+management.listener.ssl = false
 
-hipe_compile                                   = false
-
-consumer_timeout                               = 86400000  # 24 hours
+hipe_compile = false
+consumer_timeout = 86400000
 
 ##
 ## Clustering
 ## =====================
 ##
 
-cluster_formation.peer_discovery_backend       = rabbit_peer_discovery_aws
-cluster_formation.aws.region                   = ${AWS_REGION}
-cluster_formation.aws.access_key_id            = ${AWS_ACCESS_KEY}
-cluster_formation.aws.secret_key               = ${AWS_SECRET_KEY}
-cluster_formation.aws.use_autoscaling_group    = true
-
-
-EndOfConfig
+cluster_formation.peer_discovery_backend = rabbit_peer_discovery_aws
+cluster_formation.aws.region = ${AWS_REGION}
+cluster_formation.aws.access_key_id = ${AWS_ACCESS_KEY}
+cluster_formation.aws.secret_key = ${AWS_SECRET_KEY}
+cluster_formation.aws.use_autoscaling_group = true
+EOF
 
 RABBITMQ_PLUGINS_FOLDER="/usr/lib/rabbitmq/plugins"
-
-mkdir -p $RABBITMQ_PLUGINS_FOLDER
+mkdir -p "$RABBITMQ_PLUGINS_FOLDER"
 
 wget "https://github.com/noxdafox/rabbitmq-message-deduplication/releases/download/0.5.1/elixir-1.12.2.ez" -O "$RABBITMQ_PLUGINS_FOLDER/elixir-1.12.2.ez"
 wget "https://github.com/noxdafox/rabbitmq-message-deduplication/releases/download/0.5.1/rabbitmq_message_deduplication-0.5.1.ez" -O "$RABBITMQ_PLUGINS_FOLDER/rabbitmq_message_deduplication-0.5.1.ez"
 wget "https://github.com/Ayanda-D/rabbitmq-queue-master-balancer/releases/download/v0.0.5/rabbitmq_queue_master_balancer-0.0.5.ez" -O "$RABBITMQ_PLUGINS_FOLDER/rabbitmq_queue_master_balancer-0.0.5.ez"
 
-RABBITMQ_PLUGINS="[rabbitmq_shovel,rabbitmq_shovel_management,rabbitmq_management,rabbitmq_peer_discovery_aws,rabbitmq_queue_master_balancer,rabbitmq_tracing,rabbitmq_message_deduplication]."
-
-echo $RABBITMQ_PLUGINS > /etc/rabbitmq/enabled_plugins
+cat <<EOF > /etc/rabbitmq/enabled_plugins
+[rabbitmq_shovel,rabbitmq_shovel_management,rabbitmq_management,rabbitmq_peer_discovery_aws,rabbitmq_queue_master_balancer,rabbitmq_tracing,rabbitmq_message_deduplication].
+EOF
 
 # ----------------------------------------
 # Install Rabbitmq
